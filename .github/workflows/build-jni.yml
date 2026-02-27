@@ -14,42 +14,30 @@ jobs:
       ANDROID_NDK_HOME: /opt/android-ndk-r25b
 
     steps:
-    # Step 1: Checkout repo
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Install dependencies
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y unzip wget
 
-    # Step 3: Unzip JNI folder
     - name: Unzip JNI folder
       run: |
         unzip -o jni.zip -d .
 
-    # Step 4: Download Android NDK
     - name: Download Android NDK
       run: |
         wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
         unzip -q android-ndk-r25b-linux.zip -d /opt
 
-    # Step 5: Build JNI for multiple ABIs
-    - name: Build JNI with ndk-build for all ABIs
+    - name: Build JNI for arm64-v8a
       run: |
-        $ANDROID_NDK_HOME/ndk-build \
-          NDK_PROJECT_PATH=. \
-          APP_BUILD_SCRIPT=./jni/Android.mk \
-          APP_ABI="armeabi-v7a arm64-v8a x86 x86_64"
+        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./jni/Android.mk
 
-    # Step 6: Upload all compiled libraries
     - name: Upload compiled libraries
       uses: actions/upload-artifact@v4
       with:
         name: native-libs
         path: |
-          libs/armeabi-v7a/*.so
           libs/arm64-v8a/*.so
-          libs/x86/*.so
-          libs/x86_64/*.so
