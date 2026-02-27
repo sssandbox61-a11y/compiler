@@ -1,42 +1,49 @@
-name: Build JNI (arm64)
+name: Build JNI (arm64) Fully Automated
 
 on:
   push:
     branches:
       - main
   pull_request:
+  workflow_dispatch: # Allows manual trigger anytime
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       ANDROID_NDK_HOME: /opt/android-ndk-r25b
 
     steps:
+    # 1️⃣ Checkout repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # 2️⃣ Install required dependencies
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y unzip wget
 
+    # 3️⃣ Unzip JNI folder
     - name: Unzip JNI folder
       run: |
         unzip -o jni.zip -d .
 
+    # 4️⃣ Download Android NDK
     - name: Download Android NDK
       run: |
         wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
         unzip -q android-ndk-r25b-linux.zip -d /opt
 
+    # 5️⃣ Build JNI for arm64-v8a (override C++ version)
     - name: Build JNI for arm64-v8a
       run: |
         $ANDROID_NDK_HOME/ndk-build \
           NDK_PROJECT_PATH=. \
-          APP_BUILD_SCRIPT=./jni/Android.mk
+          APP_BUILD_SCRIPT=./jni/Android.mk \
+          APP_CPPFLAGS="-std=c++20"
 
+    # 6️⃣ Upload compiled libraries
     - name: Upload compiled libraries
       uses: actions/upload-artifact@v4
       with:
